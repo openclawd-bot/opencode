@@ -1,0 +1,1 @@
+Exit research mode and switch to build mode for implementation. Use this when the research report is complete and ready to be acted upon.

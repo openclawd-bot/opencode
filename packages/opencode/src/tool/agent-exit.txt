@@ -1,0 +1,1 @@
+Exit agent mode and switch to build mode for implementation. Use this when the plan is approved and you're ready to execute.

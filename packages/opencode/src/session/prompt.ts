@@ -18,6 +18,8 @@ import { SystemPrompt } from "./system"
 import { InstructionPrompt } from "./instruction"
 import { Plugin } from "../plugin"
 import PROMPT_PLAN from "../session/prompt/plan.txt"
+import PROMPT_RESEARCH from "../session/prompt/research.txt"
+import PROMPT_AGENT from "../session/prompt/agent.txt"
 import BUILD_SWITCH from "../session/prompt/build-switch.txt"
 import MAX_STEPS from "../session/prompt/max-steps.txt"
 import { defer } from "../util/defer"
@@ -1406,6 +1408,45 @@ You are now in ${input.agent.name} mode. You have regained access to file system
       userMessage.parts.push(part)
       return input.messages
     }
+
+    // Entering research mode
+    if (input.agent.name === "research" && assistantMessage?.info.agent !== "research") {
+      const research = Session.research(input.session)
+      const exists = await Bun.file(research).exists()
+      if (!exists) await fs.mkdir(path.dirname(research), { recursive: true })
+      const part = await Session.updatePart({
+        id: Identifier.ascending("part"),
+        messageID: userMessage.info.id,
+        sessionID: userMessage.info.sessionID,
+        type: "text",
+        text: PROMPT_RESEARCH.replace("${research}", research).replace(
+          "${exists}",
+          exists ? "already exists" : "does not exist",
+        ),
+        synthetic: true,
+      })
+      userMessage.parts.push(part)
+      return input.messages
+    }
+
+    // Switching from research mode to build mode
+    if (input.agent.name !== "research" && assistantMessage?.info.agent === "research") {
+      const research = Session.research(input.session)
+      const exists = await Bun.file(research).exists()
+      if (exists) {
+        const part = await Session.updatePart({
+          id: Identifier.ascending("part"),
+          messageID: userMessage.info.id,
+          sessionID: userMessage.info.sessionID,
+          type: "text",
+          text: `Research complete. A research file exists at ${research}. Implement the research findings.`,
+          synthetic: true,
+        })
+        userMessage.parts.push(part)
+      }
+      return input.messages
+    }
+
     return input.messages
   }
 

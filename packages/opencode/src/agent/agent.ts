@@ -61,8 +61,6 @@ export namespace Agent {
         ...Object.fromEntries(skillDirs.map((dir) => [path.join(dir, "*"), "allow"])),
       },
       question: "deny",
-      plan_enter: "deny",
-      plan_exit: "deny",
       // mirrors github.com/github/gitignore Node.gitignore pattern for .env files
       read: {
         "*": "allow",
@@ -74,46 +72,45 @@ export namespace Agent {
     const user = PermissionNext.fromConfig(cfg.permission ?? {})
 
     const result: Record<string, Info> = {
-      build: {
-        name: "build",
-        description: "The default agent. Executes tools based on configured permissions.",
+      agent: {
+        name: "agent",
+        description: "Agent mode. Unified planning and execution. Starts in planning mode, switches to build mode after plan approval.",
         options: {},
         permission: PermissionNext.merge(
           defaults,
           PermissionNext.fromConfig({
             question: "allow",
-            plan_enter: "allow",
+            agent_exit: "allow",
             chat_enter: "allow",
-          }),
-          user,
-        ),
-        mode: "primary",
-        native: true,
-      },
-      plan: {
-        name: "plan",
-        description: "Plan mode. Disallows all edit tools.",
-        options: {},
-        permission: PermissionNext.merge(
-          defaults,
-          PermissionNext.fromConfig({
-            question: "allow",
-            plan_exit: "allow",
-            chat_enter: "allow",
-            external_directory: {
-              [path.join(Global.Path.data, "plans", "*")]: "allow",
+            research_enter: "allow",
+            agent_approve_plan: "allow",
+            agent_deny_plan: "allow",
+            websearch: { "*": "allow" },
+            webfetch: { "*": "allow" },
+            read: { "*": "allow" },
+            todowrite: "allow",
+            task: { "*": "allow" },
+            write: {
+              "*": "deny",
+              [path.join(".opencode", "plans", "*.md")]: "allow",
+              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+              [path.join(".opencode", "research", "*.md")]: "allow",
             },
             edit: {
               "*": "deny",
               [path.join(".opencode", "plans", "*.md")]: "allow",
               [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
             },
+            bash: { "*": "deny" },
+            glob: { "*": "deny" },
+            grep: { "*": "deny" },
           }),
           user,
         ),
         mode: "primary",
         native: true,
       },
+
       chat: {
         name: "chat",
         description: "Chat mode. A general-purpose chatbot without file system access.",
@@ -148,6 +145,47 @@ export namespace Agent {
           user,
         ),
         mode: "primary",
+        native: true,
+      },
+      research: {
+        name: "research",
+        description: "Research mode. Systematic web research with structured workflow.",
+        options: {},
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            research_exit: "allow",
+            chat_enter: "allow",
+            agent_enter: "allow",
+            websearch: { "*": "allow" },
+            webfetch: { "*": "allow" },
+            read: { "*": "allow" },
+            write: { "*": "allow" },
+            todowrite: "allow",
+            task: { "researcher": "allow" },
+          }),
+          user,
+        ),
+        mode: "primary",
+        native: true,
+      },
+      researcher: {
+        name: "researcher",
+        description: "Limited research subagent for parallel web searches. Only has websearch, webfetch, and read access.",
+        options: {},
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            "*": "deny",
+            websearch: { "*": "allow" },
+            webfetch: { "*": "allow" },
+            read: { "*": "allow" },
+            todowrite: "allow",
+          }),
+          user,
+        ),
+        mode: "subagent",
         native: true,
       },
       general: {
@@ -296,7 +334,7 @@ export namespace Agent {
     return pipe(
       await state(),
       values(),
-      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"]),
+      sortBy([(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "agent"), "desc"]),
     )
   }
 

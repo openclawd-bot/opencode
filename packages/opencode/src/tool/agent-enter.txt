@@ -1,0 +1,1 @@
+Enter agent mode for unified planning and execution. The agent will first plan, then ask for approval before executing.

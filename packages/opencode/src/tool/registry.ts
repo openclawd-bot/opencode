@@ -25,8 +25,10 @@ import { Flag } from "@/flag/flag"
 import { Log } from "@/util/log"
 import { LspTool } from "./lsp"
 import { Truncate } from "./truncation"
-import { PlanExitTool, PlanEnterTool } from "./plan"
+
 import { ChatExitTool, ChatEnterTool, ModeCycleTool } from "./chat"
+import { ResearchExitTool, ResearchEnterTool } from "./research"
+import { AgentExitTool, AgentEnterTool, AgentApprovePlanTool, AgentDenyPlanTool } from "./agent"
 import { ApplyPatchTool } from "./apply_patch"
 
 export namespace ToolRegistry {
@@ -115,7 +117,10 @@ export namespace ToolRegistry {
       ApplyPatchTool,
       ...(Flag.OPENCODE_EXPERIMENTAL_LSP_TOOL ? [LspTool] : []),
       ...(config.experimental?.batch_tool === true ? [BatchTool] : []),
-      ...(Flag.OPENCODE_EXPERIMENTAL_PLAN_MODE && Flag.OPENCODE_CLIENT === "cli" ? [PlanExitTool, PlanEnterTool] : []),
+      
+      ...(Flag.OPENCODE_EXPERIMENTAL_RESEARCH_MODE && Flag.OPENCODE_CLIENT === "cli"
+        ? [ResearchExitTool, ResearchEnterTool]
+        : []),
       ...(Flag.OPENCODE_CLIENT === "cli" ? [ChatExitTool, ChatEnterTool, ModeCycleTool] : []),
       ...custom,
     ]
