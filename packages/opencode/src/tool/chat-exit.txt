@@ -1,0 +1,7 @@
+Call this when the user wants to exit chat mode and return to coding mode.
+
+When called, the user will be prompted to choose between:
+- Build mode: For coding and file editing tasks
+- Plan mode: For research and planning without editing files
+
+Once chat mode is exited, you cannot re-enter chat mode in the same thread.

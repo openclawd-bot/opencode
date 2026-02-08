@@ -1,0 +1,15 @@
+Call this when the user wants to enter chat mode or asks to switch to chat mode.
+
+Chat mode is a general-purpose conversation mode without access to:
+- File system operations (read, write, edit, glob, grep)
+- Bash commands
+- External directories
+
+In chat mode, you are a helpful AI assistant for general conversation and can use:
+- Web search and web fetch
+- Code search
+- Task/subagent tools
+- Todo tools
+- Question tool
+
+This tool is only available when starting a new conversation (not in an existing thread with assistant messages).

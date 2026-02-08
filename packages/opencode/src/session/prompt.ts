@@ -1361,6 +1361,51 @@ NOTE: At any point in time through this workflow you should feel free to ask the
       userMessage.parts.push(part)
       return input.messages
     }
+
+    // Entering chat mode
+    if (input.agent.name === "chat" && assistantMessage?.info.agent !== "chat") {
+      const part = await Session.updatePart({
+        id: Identifier.ascending("part"),
+        messageID: userMessage.info.id,
+        sessionID: userMessage.info.sessionID,
+        type: "text",
+        text: `<system-reminder>
+Chat mode is active. You are a general-purpose AI assistant for conversation and do not have access to:
+- File system operations (read, write, edit, glob, grep)
+- Bash commands
+- External directories
+- Any coding-specific tools
+
+You can use:
+- Web search and web fetch
+- Code search
+- Task/subagent tools for parallel work
+- Todo tools for task management
+- Question tool to ask the user for clarification
+
+You should not mention being a coding agent or having any file system capabilities. You are simply a helpful chatbot.
+</system-reminder>`,
+        synthetic: true,
+      })
+      userMessage.parts.push(part)
+      return input.messages
+    }
+
+    // Exiting chat mode
+    if (input.agent.name !== "chat" && assistantMessage?.info.agent === "chat") {
+      const part = await Session.updatePart({
+        id: Identifier.ascending("part"),
+        messageID: userMessage.info.id,
+        sessionID: userMessage.info.sessionID,
+        type: "text",
+        text: `<system-reminder>
+You are now in ${input.agent.name} mode. You have regained access to file system operations and coding tools.
+</system-reminder>`,
+        synthetic: true,
+      })
+      userMessage.parts.push(part)
+      return input.messages
+    }
     return input.messages
   }
 

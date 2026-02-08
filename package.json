@@ -13,7 +13,10 @@
     "prepare": "husky",
     "random": "echo 'Random script'",
     "hello": "echo 'Hello World!'",
-    "test": "echo 'do not run tests from root' && exit 1"
+    "test": "echo 'do not run tests from root' && exit 1",
+    "build": "bun turbo build",
+    "start": "bun run build && bun run --cwd packages/opencode --conditions=browser src/index.ts",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/.turbo .turbo"
   },
   "workspaces": {
     "packages": [
@@ -82,7 +85,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/anomalyco/opencode"
+    "url": "https://github.com/openclawd-bot/opencode"
   },
   "license": "MIT",
   "prettier": {

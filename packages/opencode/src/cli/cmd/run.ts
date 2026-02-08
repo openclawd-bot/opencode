@@ -254,6 +254,11 @@ export const RunCommand = cmd({
         type: "string",
         describe: "agent to use",
       })
+      .option("mode", {
+        type: "string",
+        choices: ["build", "plan", "chat"],
+        describe: "agent mode to start with (cycles: build → plan → chat). Only available when starting a new session.",
+      })
       .option("format", {
         type: "string",
         choices: ["default", "json"],
@@ -525,8 +530,22 @@ export const RunCommand = cmd({
         }
       }
 
-      // Validate agent if specified
+      // Validate agent if specified, or use mode to determine agent
       const agent = await (async () => {
+        // If --mode is specified and we're not continuing a session, use it
+        if (args.mode && !args.continue && !args.session) {
+          const entry = await Agent.get(args.mode)
+          if (!entry) {
+            UI.println(
+              UI.Style.TEXT_WARNING_BOLD + "!",
+              UI.Style.TEXT_NORMAL,
+              `mode "${args.mode}" not found. Falling back to default agent`,
+            )
+            return undefined
+          }
+          return args.mode
+        }
+
         if (!args.agent) return undefined
         const entry = await Agent.get(args.agent)
         if (!entry) {

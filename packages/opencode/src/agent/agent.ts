@@ -83,6 +83,7 @@ export namespace Agent {
           PermissionNext.fromConfig({
             question: "allow",
             plan_enter: "allow",
+            chat_enter: "allow",
           }),
           user,
         ),
@@ -98,6 +99,7 @@ export namespace Agent {
           PermissionNext.fromConfig({
             question: "allow",
             plan_exit: "allow",
+            chat_enter: "allow",
             external_directory: {
               [path.join(Global.Path.data, "plans", "*")]: "allow",
             },
@@ -105,6 +107,42 @@ export namespace Agent {
               "*": "deny",
               [path.join(".opencode", "plans", "*.md")]: "allow",
               [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+            },
+          }),
+          user,
+        ),
+        mode: "primary",
+        native: true,
+      },
+      chat: {
+        name: "chat",
+        description: "Chat mode. A general-purpose chatbot without file system access.",
+        options: {},
+        permission: PermissionNext.merge(
+          defaults,
+          PermissionNext.fromConfig({
+            question: "allow",
+            chat_exit: "allow",
+            read: {
+              "*": "deny",
+            },
+            write: {
+              "*": "deny",
+            },
+            edit: {
+              "*": "deny",
+            },
+            glob: {
+              "*": "deny",
+            },
+            grep: {
+              "*": "deny",
+            },
+            bash: {
+              "*": "deny",
+            },
+            external_directory: {
+              "*": "deny",
             },
           }),
           user,
